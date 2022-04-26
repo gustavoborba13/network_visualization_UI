@@ -6,13 +6,13 @@ This Project was designed upon request, to be implemented by Trygg-Hansa.
 
 In this project, we created a simple user interface that presents the visualization of a network. The data used is not real, but was created to represent the interactions between an insurance company's policies and claims in a way that facilitates the understanding of the data. 
 
-The visualization includes colors, shapes, titles, and labels that allow an easy interpratation. 
+The visualization includes colors, shapes, titles, and labels that allow easy interpretation. 
 
 The user interface includes different inputs and outputs:
 * text input: filters the network visualization output by an ID typed
-* slider input: silder bar that filters the network visualization output by a date-range
-* text output: text information repeating the typed ID, or informing that typed ID does not exist 
-* netowrk visualization output: the filtered network visualization of the data
+* slider input: slider bar that filters the network visualization output by a date-range
+* text output: text information repeating the typed ID, or informing that the typed ID does not exist 
+* network visualization output: the filtered network visualization of the data
 
 
 ## Folders
