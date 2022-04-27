@@ -1,102 +1,23 @@
-## Libraries ---------------------------
-library(dplyr)
-library(visNetwork)
-library(shiny)
-library(shinyWidgets)
-library(shinydashboard)
+
 library(igraph)
+library(fields)
+
+#and over here we map the pallete to the order of values on vertices
+
+V(network.igraph)$color = continuous.color(nrow(nodes.net))[cut(nodes.net$label, breaks = nrow(nodes.net))]
+
+#Display the graph and the legend.
+plot(network.igraph)
+
+image.plot(legend.only=T, zlim=range(c(0:1)), col= color.background[order(nodes.net$label)] )
 
 
 
-## Load data ---------------------------
-
-edges.viz <- read.csv("data/netviz-edges.csv", sep = "|")
-
-nodes.viz <- read.csv("data/netviz-nodes.csv", sep = "|")
 
 
-################################# VisNetwork Approach ######################################
+#### SHINY
+header <- dashboardHeader(title = "Network Visualization")
 
-## Nodes and Edges ---------------------
-
-# Nodes 
-nodes.net <- as.data.frame(nodes.viz)
-colnames(nodes.net) <- c("id", "label", "type") #rename columns for visNetwork standards
-
-# Edges 
-edges.net <- as.data.frame(edges.viz)
-colnames(edges.net) <- c("from", "to", "date")  #rename columns for visNetwork standards
-
-## Shape -------------------------------
-
-##Shape by Type
-v.shape <- ifelse(nodes.net$type == "s", "square", "circle")  #node type "s" = "square" 
-                                                                      #others = "circle" 
-nodes.net$shape <- v.shape                                    #new column in nodes.net
-
-
-## Colors -------------------------------
-
-#color pallet from yellow to dark red
-continuous.color <- colorRampPalette(c('yellow',"orange" ,'dark red'))  
-
-#list of colors related to nodes values for node background 
-color.background <- continuous.color(nrow(nodes.net))[cut(nodes.net$label, 
-                                                          breaks = nrow(nodes.net))]
-nodes.net$color.background <- color.background      #new column with nodes background color
-
-#border color
-nodes.net$color.border <- "#013848"   #Very dark cyan border color   
-
-## legend ------------------------------
-legend <- data.frame(
-  shape = c("square", "dot", "square", "square", "square"),    #shapes shown in the legend
-  label = c("Party", "Claim", "Low", "Mid", "High"),           #labels shown in the legend
-  color = c("black", "black", continuous.color(3))             #legend for 3 main colors
-)
-## Titles -------------------------------
-
-#titles - info shown when mouse hover a node or edge
-
-#nodes information
-titles.nodes <- paste0("<p><b>", nodes.net$id ,
-                      "</b><br>Value:", round(nodes.net$label,3)) 
-nodes.net$title <- titles.nodes                  #new column in nodes.net
-
-#edges Information 
-titles.edges <- paste0("<p><b>", edges.net$from, " - ", edges.net$to, 
-                      "</b><br>Date: ", edges.net$date)
-edges.net$title <- titles.edges                  #new column in edges.net
-
-## Date Type format ---------------------
-
-#dates to date type
-edges.net$date <- as.Date(edges.net$date)  #date column as.Date value
-
-
-## X and Y node Coordinates -------------
-
-#create igraph object 
-network.igraph <- graph_from_data_frame(edges.viz, directed = FALSE) 
-
-#Calculate coordinates once for entire component
-coordinates <- layout_nicely(network.igraph)    
-
-#extract vertices (nodes) names(IDs)
-nodes1<- names(V(network.igraph))                                         
-
-#list with each node's coordinates
-pos1 <- setNames(split(coordinates, seq(nrow(coordinates))), nodes1)      
-
-#nodes coordinates x and y 
-nodes.net[c("x", "y")] <- do.call(rbind, pos1[nodes.net$id]) #add x and y coords to nodes.net
-
-
-################################## Shiny Dashboard #########################################
-
-## User Interface (UI) ------------------
-
-#sidebar
 sidebar <- dashboardSidebar(
   hr(),
   sidebarMenu(id="tabs",
@@ -106,18 +27,22 @@ sidebar <- dashboardSidebar(
   )
 )
 
-#body
-body <- dashboardBody(        #dashboard body, include the Network clicked on sidebar
-  tabItems(
-    tabItem(tabName = "network-date",
+body <- dashboardBody( 
+  tabItem(tabName = "network-date",
+          fluidRow(
             textInput(inputId = "num",         #textInput for user to type ID code
                       label = "Type ID",
                       value = "", 
                       width = 100, 
                       placeholder = NULL),    
             span(textOutput(outputId = "id"),  #textOutput stating the ID or error in RED
-                 style = "color:red"),    
-            visNetworkOutput("mynetwork"),     #visNetworkOutput based on ID and date range
+                 style = "color:red")    
+          ),
+          fluidRow( 
+            column(9,visNetworkOutput("mynetwork")),
+            column(3, plotOutput("lcol"))
+          ),
+          fluidRow(
             sliderTextInput(                   #slider to chose date
               inputId = "date",
               label = "Dates:",
@@ -129,22 +54,16 @@ body <- dashboardBody(        #dashboard body, include the Network clicked on si
               width = '95%',
               animate = animationOptions(interval = 100)  #steps automatic speed
             )
-            
-    )
-    
+          )
   )
 )
 
-#user interface
 ui <- dashboardPage(
-  skin = "red",                                           #company's main color
-  dashboardHeader(title = "Network Visualization"),       #dashboard title 
+  skin = "red",
+  header,
   sidebar,
   body
 )
-
-
-## Server -------------------------------
 
 server <- function(input, output) {
   output$id <- renderText({             #output text stating ID (if exists) or error message
@@ -209,7 +128,7 @@ server <- function(input, output) {
       #filtered list of connected nodes that are inside date range
       list.connected.nodes <- nodes.net %>%
         slice(c(which(nodes.net$id %in% c(list.connected.edges$from,
-                                           list.connected.edges$to))))
+                                          list.connected.edges$to))))
       
       
       
@@ -234,7 +153,7 @@ server <- function(input, output) {
                                            degree = nrow(edges.net), 
                                            hover =TRUE),
                    selectedBy = list(variable = "type", 
-                   style = 'width: 150px; height: 26px;background: #f8f8f8; color: black'), 
+                                     style = 'width: 150px; height: 26px;background: #f8f8f8; color: black'), 
                    nodesIdSelection = list(enabled = TRUE, 
                                            useLabels = FALSE, 
                                            selected = node,
@@ -275,8 +194,8 @@ server <- function(input, output) {
                                               background: #f8f8f8; 
                                               color: black'), 
                    nodesIdSelection = list(enabled = TRUE, 
-                                      useLabels = FALSE,
-                                      style = 'width: 150px; 
+                                           useLabels = FALSE,
+                                           style = 'width: 150px; 
                                                height: 26px;
                                                background: #f8f8f8;
                                                color: black')) %>% 
@@ -287,8 +206,15 @@ server <- function(input, output) {
     
   })
   
+  output$lcol <- renderPlot({
+    
+    image.plot(legend.only=T, zlim=range(round(min(nodes.net$label)):round(max(nodes.net$label))), col= color.background[order(nodes.net$label)])
+    
+  })
+  
   
 }
 
-## Shiny App ----------------------------
+
 shinyApp(ui, server)
+

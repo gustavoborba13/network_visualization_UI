@@ -1,5 +1,4 @@
 #Libraries 
-
 library(dplyr)
 library(visNetwork)
 library(shiny)
@@ -8,26 +7,11 @@ library(shinydashboard)
 library(igraph)
 library(plotly)
 
-#
-#
-# titles that pop up when mouse hover over nodes and edges 
-#
-#
+#read data
+edges.viz <- read.csv("data-raw_trygg-hansa_nodes-edges/netviz-edges.csv", sep = "|")
 
+nodes.viz <- read.csv("data-raw_trygg-hansa_nodes-edges/netviz-nodes.csv", sep = "|")
 
-
-## Load data ---------------------------
-
-edges.viz <- read.csv("data/netviz-edges.csv", sep = "|")
-
-nodes.viz <- read.csv("data/netviz-nodes.csv", sep = "|")
-
-
-#undirect network
-net.viz2 <- graph_from_data_frame(d=edges.viz, vertices=nodes.viz, directed=F)
-
-
-##################################### VISNETWORK APPROACH ###########################################
 
 #nodes
 nodes.net <- as.data.frame(nodes.viz)
@@ -38,89 +22,50 @@ edges.net <- as.data.frame(edges.viz)
 colnames(edges.net) <- c("from", "to", "date")
 
 #Shape by Type
-## node type "s" = "square" shape, others = "circle" shape
 
 v.shape <- ifelse(nodes.net$type == "s", "square", "circle")
 nodes.net$shape = v.shape
 
-
 #Color by Value(label)
-continuous.color <- colorRampPalette(c('yellow',"orange" ,'dark red'))               #color pallet from yellow to dark red
+#continuous color
 
+continuous.color <- colorRampPalette(c('yellow',"orange" ,'dark red'))
 
-color.background <- continuous.color(3)[cut(nodes.net$label,               
-                                            breaks = 3)]
+color.background <- continuous.color(nrow(nodes.net))[cut(nodes.net$label, breaks = nrow(nodes.net))]
 
-
-nodes.net$color.background = color.background                                        #new column with nodes background color
+nodes.net$color.background = color.background
 
 #border color
-nodes.net$color.border = "#013848"        #Very dark cyan border color   
+nodes.net$color.border = "#013848"
 
-## legend ------------------------------
-legend <- data.frame(
-  shape = c("square", "dot", "square", "square", "square"), 
-  label = c("Party", "Claim", "Low", "Mid", "High"),
-  color = c("black", "black", continuous.color(3))
-)
+#nodes size
+nodes.net$size = 25
 
-
-
-#titles
-#nodes
+#titles = paste0("<p><b>", nodes.net$id ,"</b><br>Node !</p>")
 titles.nodes = paste0("<p><b>", nodes.net$id ,
-                      "</b><br>Value:", round(nodes.net$label,3))       #Node Information (Value)
+                      "</b><br>Value:", round(nodes.net$label,3))
 
 nodes.net$title = titles.nodes
 
-#edges
+#Edges Information (Date)
 titles.edges = paste0("<p><b>", edges.net$from, " - ", edges.net$to , 
-                      "</b><br>Date: ", edges.net$date)                 #Edges Information (Date)
+                      "</b><br>Date: ", edges.net$date)
 
 edges.net$title = titles.edges
+
+
+
+#legend
+legend <- data.frame(shape = c("square", "dot"), 
+                     label = c("Party", "Claim"),
+                     color = c("black","black"))
+
 #dates to date type
 edges.net$date = as.Date(edges.net$date)
-########################################################## NODES COORDINATES ##########################################################
 
-#igraph network 
-network.igraph <- graph_from_data_frame(edges.viz, directed = F)                       # create igraph object
-coordinates <- layout_nicely(network.igraph)                                           # Calculate coordinates once for entire component
-nodes1<- names(V(network.igraph))
-pos1 <- setNames(split(coordinates, seq(nrow(coordinates))), nodes1)
 
-#nodes coordinates x and y 
-nodes.net[c("x", "y")] = do.call(rbind, pos1[nodes.net$id])
-
-edges.viz[c("x", "y")] <- do.call(rbind, pos1[edges.viz$source_id])
-edges.viz[c("xend", "yend")] <- do.call(rbind, pos1[edges.viz$target_id])
-
-axis <- list(
-  title = "",
-  showgrid = FALSE,
-  showticklabels = FALSE,
-  zeroline = FALSE)
-
-plot_ly() %>%
-  # edges
-  add_segments(data = edges.viz,
-               x = ~x,
-               xend = ~xend,
-               y = ~y,
-               yend = ~yend,
-               name = "Edges") %>%
-  # nodes
-  add_trace(x = coordinates[, 1],
-            y = coordinates[, 2],
-            mode = "markers",
-            type = "scatter",
-            name = "Nodes") %>%
-  layout(xaxis = axis,
-         yaxis = axis)
-
-##########################################################################################################################
-#network visualization
 visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
-  visIgraphLayout() %>%
+  visIgraphLayout(randomSeed = 4) %>%
   visNodes( 
     color = list(highlight = NA),
     borderWidthSelected = 3) %>%
@@ -199,7 +144,7 @@ server <- function(input, output) {
       slice(c(which(nodes.net$id %in%  c(date.filtered.edges$from, date.filtered.edges$to))))
     
     #opacity 
-    #nodes
+      #nodes
     node.opacity <- list()
     for (i in 1:nrow(nodes.net)){
       
@@ -213,7 +158,7 @@ server <- function(input, output) {
     
     nodes.net$opacity = node.opacity
     
-    #edges
+      #edges
     edge.opacity <- list()
     for (i in 1:nrow(edges.net)){
       
@@ -232,7 +177,7 @@ server <- function(input, output) {
       
       #Building the Visualization
       visualization <- visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
-        visIgraphLayout() %>%
+        visIgraphLayout(randomSeed = 4) %>%
         visNodes( 
           color = list(
             highlight = NA),
@@ -250,7 +195,7 @@ server <- function(input, output) {
       
     }else{
       visualization <- visNetwork(nodes = nodes.net, edges= edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
-        visIgraphLayout() %>%
+        visIgraphLayout(randomSeed = 4) %>%
         visNodes( 
           color = list(
             highlight = NA),
@@ -270,4 +215,5 @@ server <- function(input, output) {
   
 }
 shinyApp(ui, server)
+
 

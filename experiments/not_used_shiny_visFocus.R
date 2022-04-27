@@ -1,5 +1,4 @@
 #Libraries 
-
 library(dplyr)
 library(visNetwork)
 library(shiny)
@@ -8,27 +7,15 @@ library(shinydashboard)
 library(igraph)
 library(plotly)
 
-#
-#
-# titles that pop up when mouse hover over nodes and edges 
-#
-#
 
 
+#read data
+edges.viz <- read.csv("data-raw_trygg-hansa_nodes-edges/netviz-edges.csv", sep = "|")
 
-## Load data ---------------------------
-
-edges.viz <- read.csv("data/netviz-edges.csv", sep = "|")
-
-nodes.viz <- read.csv("data/netviz-nodes.csv", sep = "|")
-
-
-#undirect network
-net.viz2 <- graph_from_data_frame(d=edges.viz, vertices=nodes.viz, directed=F)
+nodes.viz <- read.csv("data-raw_trygg-hansa_nodes-edges/netviz-nodes.csv", sep = "|")
 
 
 ##################################### VISNETWORK APPROACH ###########################################
-
 #nodes
 nodes.net <- as.data.frame(nodes.viz)
 colnames(nodes.net) <- c("id", "label", "type")
@@ -38,87 +25,48 @@ edges.net <- as.data.frame(edges.viz)
 colnames(edges.net) <- c("from", "to", "date")
 
 #Shape by Type
-## node type "s" = "square" shape, others = "circle" shape
 
 v.shape <- ifelse(nodes.net$type == "s", "square", "circle")
 nodes.net$shape = v.shape
 
-
 #Color by Value(label)
-continuous.color <- colorRampPalette(c('yellow',"orange" ,'dark red'))               #color pallet from yellow to dark red
+#continuous color
 
+continuous.color <- colorRampPalette(c('yellow',"orange" ,'dark red'))
 
-color.background <- continuous.color(3)[cut(nodes.net$label,               
-                                            breaks = 3)]
+color.background <- continuous.color(nrow(nodes.net))[cut(nodes.net$label, breaks = nrow(nodes.net))]
 
-
-nodes.net$color.background = color.background                                        #new column with nodes background color
+nodes.net$color.background = color.background
 
 #border color
-nodes.net$color.border = "#013848"        #Very dark cyan border color   
+nodes.net$color.border = "#013848"
 
-## legend ------------------------------
-legend <- data.frame(
-  shape = c("square", "dot", "square", "square", "square"), 
-  label = c("Party", "Claim", "Low", "Mid", "High"),
-  color = c("black", "black", continuous.color(3))
-)
+#nodes size
+nodes.net$size = 25
 
-
-
-#titles
-#nodes
+#titles = paste0("<p><b>", nodes.net$id ,"</b><br>Node !</p>")
 titles.nodes = paste0("<p><b>", nodes.net$id ,
-                      "</b><br>Value:", round(nodes.net$label,3))       #Node Information (Value)
+                      "</b><br>Value:", round(nodes.net$label,3))
 
 nodes.net$title = titles.nodes
 
-#edges
+#Edges Information (Date)
 titles.edges = paste0("<p><b>", edges.net$from, " - ", edges.net$to , 
-                      "</b><br>Date: ", edges.net$date)                 #Edges Information (Date)
+                      "</b><br>Date: ", edges.net$date)
 
 edges.net$title = titles.edges
+
+
+
+#legend
+legend <- data.frame(shape = c("square", "dot"), 
+                     label = c("Party", "Claim"),
+                     color = c("black","black"))
+
 #dates to date type
 edges.net$date = as.Date(edges.net$date)
-########################################################## NODES COORDINATES ##########################################################
 
-#igraph network 
-network.igraph <- graph_from_data_frame(edges.viz, directed = F)                       # create igraph object
-coordinates <- layout_nicely(network.igraph)                                           # Calculate coordinates once for entire component
-nodes1<- names(V(network.igraph))
-pos1 <- setNames(split(coordinates, seq(nrow(coordinates))), nodes1)
-
-#nodes coordinates x and y 
-nodes.net[c("x", "y")] = do.call(rbind, pos1[nodes.net$id])
-
-edges.viz[c("x", "y")] <- do.call(rbind, pos1[edges.viz$source_id])
-edges.viz[c("xend", "yend")] <- do.call(rbind, pos1[edges.viz$target_id])
-
-axis <- list(
-  title = "",
-  showgrid = FALSE,
-  showticklabels = FALSE,
-  zeroline = FALSE)
-
-plot_ly() %>%
-  # edges
-  add_segments(data = edges.viz,
-               x = ~x,
-               xend = ~xend,
-               y = ~y,
-               yend = ~yend,
-               name = "Edges") %>%
-  # nodes
-  add_trace(x = coordinates[, 1],
-            y = coordinates[, 2],
-            mode = "markers",
-            type = "scatter",
-            name = "Nodes") %>%
-  layout(xaxis = axis,
-         yaxis = axis)
-
-##########################################################################################################################
-#network visualization
+#Building the Visualization
 visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
@@ -126,43 +74,47 @@ visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization",
     borderWidthSelected = 3) %>%
   visEdges(color = "black", hoverWidth = 5, selectionWidth = 3.5, shadow = T)%>%
   visInteraction(dragNodes = TRUE, multiselect = T, navigationButtons = F, zoomView = T) %>%
-  visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T, hideColor = 'rgba(0,0,0,0)'),
+  visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T),
              selectedBy = list(variable = "type", style = 'width: 150px; height: 26px;
    background: #f8f8f8;
    color: black'), 
              nodesIdSelection = list(enabled = TRUE, useLabels = FALSE, style = 'width: 150px; height: 26px;
    background: #f8f8f8;
    color: black')) %>% 
-  visLegend(useGroups = F,addNodes= legend, width = 0.08)
+  visLegend(useGroups = F,addNodes= legend, width = 0.08)%>%
+  visLayout(randomSeed = 11, improvedLayout = T)
 
 
-#shiny
+######################3 SHINY DASHBOARD ##################################3
 
+#sidebar
 sidebar <- dashboardSidebar(
   hr(),
   sidebarMenu(id="tabs",
-              menuItem("Network", tabName="network-date", icon=icon("connectdevelop"))
+              menuItem("Network", tabName="network-date", icon=icon("calendar"))
   )
 )
+
 #body
 body <- dashboardBody(
   tabItems(
     tabItem(tabName = "network-date",
             textInput(inputId = "num", label = "Type ID",
                       value = "", width = 100, placeholder = NULL),
-            span(textOutput(outputId = "id"), style = "color:red"),
             visNetworkOutput("mynetwork"),
-            sliderTextInput(                                           #slider to chose date
+            sliderTextInput(
               inputId = "date",
               label = "Dates:",
               choices = unique(edges.net$date[order(edges.net$date)]), #exact dates from edges.net without repeating date
-              from_min = min(edges.net$date),                          #from oldest edge date
-              to_max = max(edges.net$date),                            #to newest edge date
-              selected = max(edges.net$date),                          # start with newest selected
-              grid = TRUE,                                             # ticks and dates between the range showing
+              from_min = min(edges.net$date),
+              to_max = max(edges.net$date),
+              selected = max(edges.net$date),
+              grid = TRUE,
               width = '95%',
-              animate = animationOptions(interval = 100)              #speed of steps when play button is pressed
-            )
+              animate = animationOptions(interval = 200)
+            ),
+            selectInput("Focus", "Focus on node :",
+                        nodes.net$id)
             
     )
     
@@ -179,16 +131,7 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
-  
-  output$id <- renderText({                             #output text stating ID (if exists) or error message
-    if (input$num %in% nodes.net$id){
-      print(input$num)
-    }else{
-      print("ID NOT FOUND")                      #message if id is not found
-    }
-  })
-  
-  
+
   output$mynetwork <- renderVisNetwork({
     
     #date filter
@@ -197,6 +140,7 @@ server <- function(input, output) {
     
     date.filtered.nodes <- nodes.net %>%
       slice(c(which(nodes.net$id %in%  c(date.filtered.edges$from, date.filtered.edges$to))))
+    
     
     #opacity 
     #nodes
@@ -232,7 +176,7 @@ server <- function(input, output) {
       
       #Building the Visualization
       visualization <- visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
-        visIgraphLayout() %>%
+        visIgraphLayout(randomSeed = 4) %>%
         visNodes( 
           color = list(
             highlight = NA),
@@ -242,15 +186,15 @@ server <- function(input, output) {
         visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T, hideColor = 'rgba(0,0,0,0)'),
                    selectedBy = list(variable = "type", style = 'width: 150px; height: 26px;
    background: #f8f8f8;
-   color: black'), 
+   color: black'),
                    nodesIdSelection = list(enabled = TRUE, useLabels = FALSE, selected = input$num ,style = 'width: 150px; height: 26px;
    background: #f8f8f8;
-   color: black')) %>% 
+   color: black')) %>%
         visLegend(useGroups = F,addNodes= legend, width = 0.08)
       
     }else{
       visualization <- visNetwork(nodes = nodes.net, edges= edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
-        visIgraphLayout() %>%
+        visIgraphLayout(randomSeed = 4) %>%
         visNodes( 
           color = list(
             highlight = NA),
@@ -264,10 +208,26 @@ server <- function(input, output) {
                    nodesIdSelection = list(enabled = TRUE, useLabels = FALSE,style = 'width: 150px; height: 26px;
    background: #f8f8f8;
    color: black')) %>% 
-        visLegend(useGroups = F,addNodes= legend, width = 0.08)
+        visLegend(useGroups = F,addNodes= legend, width = 0.08)      
     }
+  })
+  
+  observe({
+    visNetworkProxy("mynetwork") %>%
+      visSelectNodes(id = input$Focus)%>%
+      visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T, hideColor = 'rgba(0,0,0,0)'),
+                 selectedBy = list(variable = "type", style = 'width: 150px; height: 26px;
+   background: #f8f8f8;
+   color: black'), 
+                 nodesIdSelection = list(enabled = TRUE, useLabels = FALSE, selected = input$Focus ,style = 'width: 150px; height: 26px;
+   background: #f8f8f8;
+   color: black'))
+  })
+  
+  observe({
+    visNetworkProxy("mynetwork") %>%
+      visFocus(id = input$Focus, scale = 0.6, animation = list(duration = 1200, easingFunction = "easeInOutQuad"))
   })
   
 }
 shinyApp(ui, server)
-
