@@ -87,11 +87,10 @@ server <- function(input, output) {
       nodes.net$opacity = node.opacity
       
       
-      
       edge.opacity <- list()
       for (i in 1:nrow(edges.net)){
         
-        if (edges.net$date[i] < input$date){
+        if (edges.net$date[i] <= input$date){
           edge.opacity[i] <- 1
         }
         else{
