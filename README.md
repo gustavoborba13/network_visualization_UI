@@ -20,6 +20,7 @@ The following folders and included in the repository:
 * data: includes the raw data files (netviz-edges.csv and netviz-nodes.csv) that were used in this project.
 * progress: includes numbered files that represent each step up to the final result of the project. 
 * rsconnect/shinyapps.io/gustavo-borba: contains the connection information to a URL, where the project can be visualized. 
+* experiments: inlcudes R files that were not used in the main project, either because execution failed, or a better solution was found. 
 
 ## R Packages Used
 * dplyr
