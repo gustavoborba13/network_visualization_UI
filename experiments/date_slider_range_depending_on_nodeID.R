@@ -1,3 +1,5 @@
+library(tidyverse)
+
 which(edges.net$from == "s2")
 
 edges.net$date[13]
@@ -14,6 +16,7 @@ edges.net$date[c(which(edges.net$from == "e0"), which(edges.net$to == "e0"))]
 #minimum date of an edge given a selected node ID
 min(edges.net$date[c(which(edges.net$from == "e0"), which(edges.net$to == "e0"))])
 
+choices.1 <- sort(unique(edges.net$date[order(edges.net$date)]))
 
 
 ################################## Shiny Dashboard #########################################
@@ -36,7 +39,7 @@ body <- dashboardBody(        #dashboard body, include the Network clicked on si
     tabItem(tabName = "network-date",
             textInput(inputId = "num",         #textInput for user to type ID code
                       label = "Type ID",
-                      value = "", 
+                      value = "s23", 
                       width = 100, 
                       placeholder = NULL),    
             span(textOutput(outputId = "id"),  #textOutput stating the ID or error in RED
@@ -51,8 +54,7 @@ body <- dashboardBody(        #dashboard body, include the Network clicked on si
               selected = max(edges.net$date),       # start with newest selected
               grid = TRUE,                          # ticks and dates showing in slider
               width = '95%',
-              animate = animationOptions(interval = 100),  #steps automatic speed
-              actionButton("change", "Change slider max value")
+              animate = animationOptions(interval = 100)
             )
             
     )
@@ -71,7 +73,7 @@ ui <- dashboardPage(
 
 ## Server -------------------------------
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   output$id <- renderText({             #output text stating ID (if exists) or error message
     if (input$num %in% nodes.net$id){
       print(input$num)
@@ -81,11 +83,24 @@ server <- function(input, output) {
   })
   
   
-  observeEvent(input$change,{
-    min = min(edges.net$date[c(which(edges.net$from == input$num),
-                               which(edges.net$to == input$num))])
-    updateSliderTextInput("date", from_fixed=min)
+
+  
+  observeEvent(input$num, {
+    data_subset <- 
+      edges.net %>%
+      filter(from == input$num | to == input$num)
+
+    if (nrow(data_subset) > 0) {
+      dates <- data_subset %>%
+        pull(date)
+      
+      a <- which(choices.1 == min(dates))
+      b <- length(choices.1)
+      
+      updateSliderTextInput(session, "date", choices = choices.1[a:b])
+    }
   })
+  
   
   output$mynetwork <- renderVisNetwork({
     
