@@ -116,7 +116,7 @@ body <- dashboardBody(        #dashboard body, include the Network clicked on si
     tabItem(tabName = "network-date",
             textInput(inputId = "num",         #textInput for user to type ID code
                       label = "Type ID",
-                      value = edges.net$from[which(edges.net$date == min(edges.net$date))][1],  #set initial ID for when the visualization is launched, 
+                      value = edges.net$from[which(edges.net$date == min(edges.net$date))][1],  
                       width = 100, 
                       placeholder = NULL),    
             span(textOutput(outputId = "id"),  #textOutput stating the ID or error in RED
