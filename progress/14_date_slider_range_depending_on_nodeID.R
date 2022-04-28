@@ -1,4 +1,88 @@
-server <- function(input, output) {
+library(tidyverse)
+
+#the idea is that the slider minimum date will be updated depending on the node selected
+#in a way that the minimum date possible is the first date in which the selected node exists
+
+
+#thought process 
+
+which(edges.net$from == "s2")
+
+edges.net$date[13]
+
+edges.net$date[c(which(edges.net$from == "s2"))]
+
+c(which(edges.net$from == "s2"), which(edges.net$to == "s2"))
+
+c(which(edges.net$from == "c0"), which(edges.net$to == "c0"))
+
+
+edges.net$date[c(which(edges.net$from == "e0"), which(edges.net$to == "e0"))]
+
+#minimum date of an edge given a selected node ID
+min(edges.net$date[c(which(edges.net$from == "e0"), which(edges.net$to == "e0"))])
+###################################################################################################
+
+
+
+date.choices <- sort(unique(edges.net$date[order(edges.net$date)]))  #these are all possible dates in the dataset
+
+
+################################## Shiny Dashboard #########################################
+
+## User Interface (UI) ------------------
+
+#sidebar
+sidebar <- dashboardSidebar(
+  hr(),
+  sidebarMenu(id="tabs",
+              menuItem("Network",                   #name on sidebar
+                       tabName="network-date", 
+                       icon=icon("connectdevelop")) #sidebar icon
+  )
+)
+
+#body
+body <- dashboardBody(        #dashboard body, include the Network clicked on sidebar
+  tabItems(
+    tabItem(tabName = "network-date",
+            textInput(inputId = "num",         #textInput for user to type ID code
+                      label = "Type ID",
+                      value = edges.net$from[which(edges.net$date == min(edges.net$date))][1],  #set initial ID for when the visualization is launched
+                      width = 100, 
+                      placeholder = NULL),    
+            span(textOutput(outputId = "id"),  #textOutput stating the ID or error in RED
+                 style = "color:red"),    
+            visNetworkOutput("mynetwork"),     #visNetworkOutput based on ID and date range
+            sliderTextInput(                   #slider to chose date
+              inputId = "date",
+              label = "Dates:",
+              choices = unique(edges.net$date[order(edges.net$date)]), #unique dates from data
+              from_min = min(edges.net$date),       #from oldest edge date
+              to_max = max(edges.net$date),         #to newest edge date
+              selected = max(edges.net$date),       # start with newest selected
+              grid = TRUE,                          # ticks and dates showing in slider
+              width = '95%',
+              animate = animationOptions(interval = 100)
+            )
+            
+    )
+    
+  )
+)
+
+#user interface
+ui <- dashboardPage(
+  skin = "red",                                           #company's main color
+  dashboardHeader(title = "Network Visualization"),       #dashboard title 
+  sidebar,
+  body
+)
+
+
+## Server -------------------------------
+
+server <- function(input, output, session) {
   output$id <- renderText({             #output text stating ID (if exists) or error message
     if (input$num %in% nodes.net$id){
       print(input$num)
@@ -7,6 +91,25 @@ server <- function(input, output) {
     }
   })
   
+  
+
+  ######################################################## UPDATE SLIDER ####################################
+  observeEvent(input$num, {
+    data_subset <- 
+      edges.net %>%
+      filter(from == input$num | to == input$num)
+
+    if (nrow(data_subset) > 0) {
+      dates <- data_subset %>%
+        pull(date)
+      
+      a <- which(date.choices == min(dates))
+      b <- length(date.choices)
+      
+      updateSliderTextInput(session, "date", choices = date.choices[a:b], selected = max(edges.net$date))
+    }
+  })
+ ############################################################################################################# 
   
   output$mynetwork <- renderVisNetwork({
     
@@ -90,8 +193,8 @@ server <- function(input, output) {
                                            selected = node,
                                            style = 'width: 0px; 
                                                     height: 0px; 
-                                                    background: NA; 
-                                                    color: NA')) %>% 
+                                                    background: #f8f8f8; 
+                                                    color: black')) %>% 
         visLegend(useGroups = FALSE,
                   addNodes= legend, 
                   width = 0.08)
@@ -129,11 +232,13 @@ server <- function(input, output) {
                   addNodes= legend, 
                   width = 0.08)
     }
-    
   })
+  
+
   
   
 }
 
 ## Shiny App ----------------------------
 shinyApp(ui, server)
+

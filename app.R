@@ -1,5 +1,6 @@
 ## Libraries ---------------------------
 library(dplyr)
+library(tidyverse)
 library(visNetwork)
 library(shiny)
 library(shinyWidgets)
@@ -73,6 +74,8 @@ edges.net$title <- titles.edges                  #new column in edges.net
 #dates to date type
 edges.net$date <- as.Date(edges.net$date)  #date column as.Date value
 
+#All unique possibilites of date for the date slider
+date.choices <- sort(unique(edges.net$date[order(edges.net$date)])) 
 
 ## X and Y node Coordinates -------------
 
@@ -90,6 +93,7 @@ pos1 <- setNames(split(coordinates, seq(nrow(coordinates))), nodes1)
 
 #nodes coordinates x and y 
 nodes.net[c("x", "y")] <- do.call(rbind, pos1[nodes.net$id]) #add x and y coords to nodes.net
+
 
 
 ################################## Shiny Dashboard #########################################
@@ -112,7 +116,7 @@ body <- dashboardBody(        #dashboard body, include the Network clicked on si
     tabItem(tabName = "network-date",
             textInput(inputId = "num",         #textInput for user to type ID code
                       label = "Type ID",
-                      value = "", 
+                      value = edges.net$from[which(edges.net$date == min(edges.net$date))][1],  #set initial ID for when the visualization is launched, 
                       width = 100, 
                       placeholder = NULL),    
             span(textOutput(outputId = "id"),  #textOutput stating the ID or error in RED
@@ -146,12 +150,32 @@ ui <- dashboardPage(
 
 ## Server -------------------------------
 
-server <- function(input, output) {
+server <- function(input, output,session) {
   output$id <- renderText({             #output text stating ID (if exists) or error message
     if (input$num %in% nodes.net$id){
       print(input$num)
     }else{
       print("ID NOT FOUND")             #message if id is not found
+    }
+  })
+  
+  #slide range changing depending on the ID typed. 
+  observeEvent(input$num, {
+    data_subset <- 
+      edges.net %>%
+      filter(from == input$num | to == input$num)   #dates related to the ID typed
+    
+    if (nrow(data_subset) > 0) {
+      dates <- data_subset %>%
+        pull(date)
+      
+      a <- which(date.choices == min(dates))  #min possible date related to the ID typed
+      b <- length(date.choices)               #max date from the whole project dataset
+      
+      updateSliderTextInput(session, 
+                            "date", 
+                            choices = date.choices[a:b],
+                            selected = max(edges.net$date))
     }
   })
   
@@ -233,13 +257,11 @@ server <- function(input, output) {
         visOptions(highlightNearest = list(enabled =TRUE, 
                                            degree = nrow(edges.net), 
                                            hover =TRUE),
-                   selectedBy = list(variable = "type", 
-                   style = 'width: 150px; height: 26px;background: #f8f8f8; color: black'), 
                    nodesIdSelection = list(enabled = TRUE, 
                                            useLabels = FALSE, 
                                            selected = node,
-                                           style = 'width: 150px; 
-                                                    height: 26px; 
+                                           style = 'width: 0px; 
+                                                    height: 0px; 
                                                     background: #f8f8f8; 
                                                     color: black')) %>% 
         visLegend(useGroups = FALSE,
@@ -269,15 +291,10 @@ server <- function(input, output) {
                                            degree = nrow(edges.net), 
                                            hover =TRUE, 
                                            hideColor = 'rgba(0,0,0,0)'),
-                   selectedBy = list(variable = "type",
-                                     style = 'width: 150px;
-                                              height: 26px; 
-                                              background: #f8f8f8; 
-                                              color: black'), 
                    nodesIdSelection = list(enabled = TRUE, 
                                       useLabels = FALSE,
-                                      style = 'width: 150px; 
-                                               height: 26px;
+                                      style = 'width: 0px; 
+                                               height: 0px;
                                                background: #f8f8f8;
                                                color: black')) %>% 
         visLegend(useGroups = FALSE,
