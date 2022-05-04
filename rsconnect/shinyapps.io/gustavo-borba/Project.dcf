@@ -1,0 +1,14 @@
+name: Project
+title:
+username:
+account: gustavo-borba
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6071305
+bundleId: 5846895
+url: https://gustavo-borba.shinyapps.io/Project/
+when: 1651151918.10161
+lastSyncTime: 1651151918.10161
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|README.md|experiments|progress
