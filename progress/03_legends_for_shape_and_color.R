@@ -48,22 +48,14 @@ legend <- data.frame(
 
 
 #Building the Visualization
-visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = nodes.net, edges = edges.net) %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(
-      border = "#013848",
       highlight = "#FF8000"
     )) %>%
   visEdges(color = "black", hoverWidth = 5)%>%
   visInteraction(dragNodes = TRUE, multiselect = T, navigationButtons = F, zoomView = T) %>%
-  visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T),
-             selectedBy = list(variable = "type", style = 'width: 150px; height: 26px;
-   background: #f8f8f8;
-   color: black'), 
-             nodesIdSelection = list(enabled = TRUE, useLabels = FALSE, style = 'width: 150px; height: 26px;
-   background: #f8f8f8;
-   color: black')) %>% 
   visLegend(useGroups = F,addNodes= legend, width = 0.08)%>%
   visLayout(randomSeed = 11)
 

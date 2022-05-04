@@ -62,7 +62,7 @@ nodes.net$shape = v.shape
 
 ########################################### network visualization ########################################################
 
-visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = nodes.net, edges = edges.net) %>%
   visIgraphLayout() %>%
   visNodes( 
            color = list(
@@ -71,7 +71,6 @@ visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization",
              highlight = "#FF8000"
            )) %>%
   visEdges(color = "black")%>%
-  visInteraction(dragNodes = TRUE, multiselect = T, navigationButtons = T, zoomView = T) %>%
-  visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T),
-             selectedBy = "id") %>% 
+  visInteraction(dragNodes = TRUE, multiselect = T, navigationButtons = F, zoomView = T) %>%
+  visOptions(highlightNearest = list(enabled = T, degree = nrow(edges.net), hover = T)) %>% 
   visLayout(randomSeed = 11)
