@@ -7,6 +7,11 @@ library(shinydashboard)
 library(igraph)
 
 
+#In this file I chose 2 icons from the Ionicons (around line 100)
+#(Font Awesome icons can also be used in a simple way). 
+#I opted for using those icons to make it easy to apply the color function 
+#it is also possible to add figures, but I am not sure how to deal with colors 
+
 
 ## Load data ---------------------------
 
@@ -82,7 +87,8 @@ pos1 <- setNames(split(coordinates, seq(nrow(coordinates))), nodes1)
 
 #nodes coordinates x and y 
 nodes.net[c("x", "y")] <- do.call(rbind, pos1[nodes.net$id]) #add x and y coords to nodes.net
-
+##########################################################################################
+####################################### CHAGING ICONS ####################################
 
 icon.s <- "f2d8"
 icon.c <- "f100"
@@ -94,7 +100,8 @@ nodes.net$icon.code <- icon.nodes
 
 nodes.net$icon.color <- color.background 
 
-
+##############################################################################################
+############################################################################################
 
 visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
   visIgraphLayout() %>%
