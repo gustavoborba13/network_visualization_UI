@@ -27,7 +27,8 @@ The following folders and included in the repository:
 * progress: includes numbered files that represent each step up to the final result of the project. 
 * rsconnect/shinyapps.io/gustavo-borba: contains the connection information to a URL, where the project can be visualized. 
 * experiments: inlcudes R files that were not used in the main project, either because execution failed, or a better solution was found. 
-  * icon_as_nodes_shape.R can be found here
+  * icon_as_nodes_shape.R can be found here.
+* screenshots_of_progess: contain pictures of the development of the visualization and dashboard.
 
 ## R Packages Used
 * dplyr
