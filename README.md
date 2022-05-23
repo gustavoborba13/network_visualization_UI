@@ -1,6 +1,6 @@
 # User Interface for a Network Visualization 
 
-This Project was designed upon request, to be implemented by Trygg-Hansa. 
+This Project was designed upon request, to be implemented by a Swedish insurance company. 
 
 ## Overview
 
