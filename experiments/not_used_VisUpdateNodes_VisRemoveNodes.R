@@ -75,7 +75,7 @@ edges.net$date = as.Date(edges.net$date)
 
 
 #Building the Visualization
-visualization <- visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visualization <- visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout(randomSeed = 4) %>%
   visNodes( 
     color = list(highlight = NA),
@@ -153,7 +153,7 @@ server <- function(input, output) {
     if (input$num %in% nodes.net$id){
       
       #Building the Visualization
-      visualization <- visNetwork(nodes = date.filtered.nodes, edges = date.filtered.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+      visualization <- visNetwork(nodes = date.filtered.nodes, edges = date.filtered.edges, main = "Network Visualization", background = "beige") %>%
         visIgraphLayout(randomSeed = 4) %>%
         visNodes( 
           color = list(
@@ -171,7 +171,7 @@ server <- function(input, output) {
         visLegend(useGroups = F,addNodes= legend, width = 0.08)
       
     }else{
-      visualization <- visNetwork(nodes = date.filtered.nodes, edges =date.filtered.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+      visualization <- visNetwork(nodes = date.filtered.nodes, edges =date.filtered.edges, main = "Network Visualization", background = "beige") %>%
         visIgraphLayout(randomSeed = 4) %>%
         visNodes( 
           color = list(

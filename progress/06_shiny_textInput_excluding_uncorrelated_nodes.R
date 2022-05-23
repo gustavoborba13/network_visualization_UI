@@ -140,7 +140,7 @@ list.connected.nodes <- nodes.net %>%
 
 
 #Building the Visualization
-visualization <- visNetwork(nodes = list.connected.nodes, edges = list.connected.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visualization <- visNetwork(nodes = list.connected.nodes, edges = list.connected.edges, main = "Network Visualization",  background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(
@@ -218,7 +218,7 @@ server <- function(input, output) {
       
       
       #Building the Visualization
-      visualization <- visNetwork(nodes = list.connected.nodes, edges = list.connected.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+      visualization <- visNetwork(nodes = list.connected.nodes, edges = list.connected.edges, main = "Network Visualization",  background = "beige") %>%
         visIgraphLayout() %>%
         visNodes( 
           color = list(

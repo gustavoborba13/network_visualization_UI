@@ -133,7 +133,7 @@ list.connected.nodes <- nodes.net %>%
 
 
 #Building the Visualization
-visNetwork(nodes = list.connected.nodes, edges =list.connected.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = list.connected.nodes, edges =list.connected.edges, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(
@@ -278,7 +278,7 @@ server <- function(input, output) {
       
       
       #Building the Visualization
-      visNetwork(nodes = list.connected.nodes, edges =list.connected.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+      visNetwork(nodes = list.connected.nodes, edges =list.connected.edges, main = "Network Visualization", submain = "Network", background = "beige") %>%
         visIgraphLayout() %>%
         visNodes( 
           color = list(
@@ -298,7 +298,7 @@ server <- function(input, output) {
       
       
     }else{
-      visualization <- visNetwork(nodes = date.filtered.nodes, edges= date.filtered.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+      visualization <- visNetwork(nodes = date.filtered.nodes, edges= date.filtered.edges, main = "Network Visualization", submain = "Network", background = "beige") %>%
         visIgraphLayout() %>%
         visNodes( 
           color = list(

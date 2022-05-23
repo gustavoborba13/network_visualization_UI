@@ -105,7 +105,7 @@ edges.net$date = as.Date(edges.net$date)
 
 
 #Building the Visualization
-visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout(randomSeed = 4) %>%
   visNodes( 
     color = list(highlight = NA),
@@ -177,7 +177,7 @@ server <- function(input, output) {
     edges.net$color.opacity = edge.opacity
   
     #Building the Visualization
-    visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+    visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", background = "beige") %>%
       visIgraphLayout(randomSeed = 4) %>%
       visNodes( 
         color = list(highlight = NA),

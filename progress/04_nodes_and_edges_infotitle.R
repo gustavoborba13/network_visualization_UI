@@ -87,7 +87,7 @@ edges.net$title = titles.edges
 ############################################################ vis network #####################
 
 #Building the Visualization
-visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(

@@ -103,7 +103,7 @@ nodes.net$icon.color <- color.background
 ##############################################################################################
 ############################################################################################
 
-visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(highlight = NA),

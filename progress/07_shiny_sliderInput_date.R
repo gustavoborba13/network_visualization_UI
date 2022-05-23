@@ -94,7 +94,7 @@ date.filtered.nodes <- nodes.net %>%                              #filtering nod
 
 
 #Building the Visualization
-visNetwork(nodes = date.filtered.nodes, edges = date.filtered.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = date.filtered.nodes, edges = date.filtered.edges, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(highlight = NA),
@@ -164,7 +164,7 @@ server <- function(input, output) {
       slice(c(which(nodes.net$id %in%  c(date.filtered.edges$from, date.filtered.edges$to))))
 
     
-    visualization <- visNetwork(nodes = date.filtered.nodes, edges= date.filtered.edges, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+    visualization <- visNetwork(nodes = date.filtered.nodes, edges= date.filtered.edges, main = "Network Visualization", background = "beige") %>%
       visIgraphLayout(randomSeed = 4) %>%
       visNodes( 
         color = list(
@@ -184,3 +184,4 @@ server <- function(input, output) {
   })
 }
 shinyApp(ui, server)
+

@@ -81,7 +81,7 @@ nodes.net[c("x", "y")] = do.call(rbind, pos1[nodes.net$id])               #add c
 
 
 #Building the Visualization
-visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", submain = "Trygg-Hansa", background = "beige") %>%
+visNetwork(nodes = nodes.net, edges = edges.net, main = "Network Visualization", background = "beige") %>%
   visIgraphLayout() %>%
   visNodes( 
     color = list(highlight = NA),
@@ -206,7 +206,7 @@ server <- function(input, output) {
       
       
       #Building the Visualization
-      visNetwork(nodes = list.connected.nodes, edges =list.connected.edges, main = "Trygg-Hansa", background = "beige") %>%
+      visNetwork(nodes = list.connected.nodes, edges =list.connected.edges, main = "Network", background = "beige") %>%
         visIgraphLayout() %>%
         visNodes( 
           color = list(
@@ -226,7 +226,7 @@ server <- function(input, output) {
       
       
     }else{
-      visualization <- visNetwork(nodes = date.filtered.nodes, edges= date.filtered.edges, main = "Trygg-Hansa", background = "beige") %>%
+      visualization <- visNetwork(nodes = date.filtered.nodes, edges= date.filtered.edges, main = "Network", background = "beige") %>%
         visIgraphLayout() %>%
         visNodes( 
           color = list(

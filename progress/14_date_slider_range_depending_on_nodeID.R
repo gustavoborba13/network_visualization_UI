@@ -171,7 +171,7 @@ server <- function(input, output, session) {
       #Building the Visualization
       visNetwork(nodes = list.connected.nodes, 
                  edges =list.connected.edges, 
-                 main = "Trygg-Hansa", 
+                 main = "Network", 
                  background = NA) %>%
         visIgraphLayout() %>%
         visNodes( 
@@ -204,7 +204,7 @@ server <- function(input, output, session) {
     }else{
       visualization <- visNetwork(nodes = date.filtered.nodes, 
                                   edges= date.filtered.edges, 
-                                  main = "Trygg-Hansa", 
+                                  main = "Network", 
                                   background = NA) %>%
         visIgraphLayout() %>%
         visNodes( 
